@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dhu.mapper.OrderSettingMapper">
+    <select id="findCountByOrderDate" parameterType="java.util.Date" resultType="long">
+        select count(id) from t_ordersetting where orderDate = #{orderDate}
+    </select>
+
+    <insert id="insert" parameterType="orderSetting">
+        insert into t_ordersetting(orderDate,number,reservations)
+        values (#{orderDate}, #{number}, #{reservations})
+    </insert>
+
+    <update id="editNumberByOrderDate" parameterType="orderSetting">
+        update t_ordersetting set number = #{number} where orderDate = #{orderDate}
+    </update>
+
+    <select id="getOrderSettingByMonth" parameterType="map" resultType="orderSetting">
+        select * from t_ordersetting where orderDate BETWEEN #{begin} and #{end}
+    </select>
+    
+    <select id="findByOrderDate" parameterType="java.util.Date" resultType="orderSetting">
+        select * from t_ordersetting where orderDate = #{orderDate}
+    </select>
+
+    <!--更新已预约人数-->
+    <update id="editReservationsByOrderDate" parameterType="orderSetting">
+        update t_ordersetting set reservations = #{reservations} where orderDate = #{orderDate}
+    </update>
+</mapper>

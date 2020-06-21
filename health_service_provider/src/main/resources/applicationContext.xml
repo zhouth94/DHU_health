@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans.xsd
+http://www.springframework.org/schema/context
+http://www.springframework.org/schema/context/spring-context.xsd
+http://code.alibabatech.com/schema/dubbo
+http://code.alibabatech.com/schema/dubbo/dubbo.xsd
+http://www.springframework.org/schema/aop
+http://www.springframework.org/schema/aop/spring-aop.xsd
+http://www.springframework.org/schema/tx
+http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+        <context:component-scan base-package="com.dhu">
+            <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+        </context:component-scan>
+
+        <context:property-placeholder location="classpath:db.properties"></context:property-placeholder>
+        <bean id="druidDataSource" class="com.alibaba.druid.pool.DruidDataSource">
+            <property name="driverClassName" value="${jdbc.driver}"></property>
+            <property name="url" value="${jdbc.url}"></property>
+            <property name="username" value="${jdbc.username}"></property>
+            <property name="password" value="${jdbc.password}"></property>
+        </bean>
+        <bean id="dataSourceTransactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+            <property name="dataSource" ref="druidDataSource"></property>
+        </bean>
+    <!--
+        开启事务控制的注解支持
+        注意：此处必须加入proxy-target-class="true"，
+              需要进行事务控制，会由Spring框架产生代理对象，
+              Dubbo需要将Service发布为服务，要求必须使用cglib创建代理对象。
+    -->
+        <tx:annotation-driven transaction-manager="dataSourceTransactionManager" proxy-target-class="true"/>
+
+    <!--spring整合Mybatis-->
+    <bean id="sqlSessionFactoryBean" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="druidDataSource"></property>
+        <property name="typeAliasesPackage" value="com.dhu.pojo"></property>
+        <!--加载Mybatis配置文件-->
+        <property name="configLocation" value="classpath:SqlMapConfig.xml"></property>
+    </bean>
+    <bean id="mapperScannerConfigurer" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.dhu.mapper"></property>
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactoryBean"></property>
+    </bean>
+
+    <!-- 指定应用名称 -->
+    <dubbo:application name="health_service_provider"/>
+    <!--指定暴露服务的端口，如果不指定默认为20880-->
+    <dubbo:protocol name="dubbo" port="20887"/>
+    <!--指定服务注册中心地址-->
+    <dubbo:registry address="zookeeper://192.168.93.101:2181"/>
+    <!--批量扫描，发布服务-->
+    <dubbo:annotation package="com.dhu.service"/>
+
+    <!--redis-->
+    <import resource="spring-redis.xml"></import>
+
+</beans>    

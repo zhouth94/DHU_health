@@ -1,5 +1,9 @@
 # Compiled class file
 *.class
+.idea/
+health_parent.iml
+target/
+
 
 # Log file
 *.log

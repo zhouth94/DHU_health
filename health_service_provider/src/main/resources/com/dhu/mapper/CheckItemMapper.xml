@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhu.mapper.CheckItemMapper">
+    <insert id="add" parameterType="checkItem" useGeneratedKeys="true" keyProperty="id">
+        <selectKey resultType="Integer" keyProperty="id" order="AFTER">
+            select LAST_INSERT_ID() as id
+        </selectKey>
+        insert into t_checkitem(id,code,name,sex,age,price,type,attention,remark) values (#{id},#{code},#{name},#{sex},#{age},#{price},#{type},#{attention},#{remark})
+    </insert>
+
+    <select id="queryByCondition" parameterType="String" resultType="checkItem" >
+        <!--select code, name, sex, age, price, type, attention, remark from t_checkitem where 1 = 1
+        <if test="value != null and value.length > 0">
+            and code = #{value} or name = #{value}
+        </if>-->
+        select id,code, name, sex, age, price, type, attention, remark from t_checkitem
+        <where>
+            <if test="value != null and value.length > 0">
+                code = #{value} or name = #{value}
+            </if>
+        </where>
+    </select>
+
+    <select id="findCountByCheckItemId" parameterType="Integer" resultType="Long">
+        select count(*) from t_checkgroup_checkitem where checkitem_id = #{checkitem_id}
+    </select>
+    <delete id="deleteById" parameterType="Integer">
+        delete from t_checkitem where id = #{id}
+    </delete>
+
+    <select id="findById" parameterType="Integer" resultType="checkItem">
+        select id,code, name, sex, age, price, type, attention, remark  from t_checkitem where id = #{id}
+    </select>
+
+    <update id="update" parameterType="checkItem">
+        update t_checkitem
+        <set>
+            <if test="code != null">
+                code = #{code},
+            </if>
+            <if test="name != null">
+                name = #{name},
+            </if>
+            <if test="sex != null">
+                sex = #{sex},
+            </if>
+            <if test="age != null">
+                age = #{age},
+            </if>
+            <if test="price != null">
+                price = #{price},
+            </if>
+            <if test="type != null">
+                type = #{type},
+            </if>
+            <if test="attention">
+                attention = #{attention},
+            </if>
+            <if test="remark != null">
+                remark = #{remark},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <select id="queryAll" resultType="checkItem">
+        select id,code, name, sex, age, price, type, attention, remark  from t_checkitem
+    </select>
+
+    <!--通过检查组id查询对应的检查项-->
+    <select id="findCheckItemsByCheckGroupId" parameterType="int" resultType="checkItem">
+        select * from t_checkitem where id in (select checkitem_id from t_checkgroup_checkitem where checkgroup_id = #{id});
+    </select>
+</mapper>
